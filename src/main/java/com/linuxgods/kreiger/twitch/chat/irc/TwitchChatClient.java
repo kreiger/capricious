@@ -1,6 +1,7 @@
 package com.linuxgods.kreiger.twitch.chat.irc;
 
 import com.linuxgods.kreiger.twitch.chat.TwitchChatMessage;
+import com.linuxgods.kreiger.twitch.chat.TwitchChatSource;
 import net.engio.mbassy.listener.Handler;
 import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.element.ServerMessage;
@@ -19,18 +20,22 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
-public class TwitchChatClient {
+public class TwitchChatClient implements TwitchChatSource {
     private static final String SERVER_NAME = "irc.chat.twitch.tv";
     private static final int SERVER_SECURE_PORT = 443;
 
-    private final Client client;
     private final Consumer<String> log;
+    private final String channel;
 
-    public TwitchChatClient(Consumer<String> log, Consumer<Message> twitchChatMessageConsumer) {
+    public TwitchChatClient(Consumer<String> log, String channel) {
         this.log = log;
-        Random random = new Random();
-        String nick = createAnonymousNickname(random);
-        client = Client.builder()
+        this.channel = channel;
+    }
+
+    @Override
+    public void consumeChatMessages(Consumer<TwitchChatMessage> consumer) {
+        String nick = createAnonymousNickname();
+        Client ircClient = Client.builder()
                 .serverHost(SERVER_NAME)
                 .serverPort(SERVER_SECURE_PORT)
                 .nick(nick)
@@ -44,14 +49,16 @@ public class TwitchChatClient {
                     eventManager.registerEventListener(new Object() {
                         @Handler
                         public void onChannelMessage(ChannelMessageEvent event) throws BadLocationException {
-                            twitchChatMessageConsumer.accept(new Message(event));
+                            consumer.accept(new Message(event));
                         }
                     });
                 })
                 .build();
+        ircClient.addChannel("#" + channel.toLowerCase());
     }
 
-    private String createAnonymousNickname(Random random) {
+    private String createAnonymousNickname() {
+        Random random = new Random();
         return "justinfan" + IntStream.range(0, 14)
                 .map(i -> random.nextInt(10))
                 .mapToObj(Integer::toString)
@@ -60,10 +67,6 @@ public class TwitchChatClient {
 
     private void log(String l) {
         log.accept(ZonedDateTime.now() + l);
-    }
-
-    public void addChannel(String channel) {
-        client.addChannel("#" + channel.toLowerCase());
     }
 
     public static class Message implements TwitchChatMessage {

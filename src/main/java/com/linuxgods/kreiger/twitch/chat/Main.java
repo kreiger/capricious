@@ -2,10 +2,10 @@ package com.linuxgods.kreiger.twitch.chat;
 
 import com.linuxgods.kreiger.twitch.chat.filter.FewDuplicatesMessagePredicate;
 import com.linuxgods.kreiger.twitch.chat.filter.LevenshteinDuplicateStringBiPredicate;
-import com.linuxgods.kreiger.twitch.web.TwitchWebScraper;
 import com.linuxgods.kreiger.twitch.chat.gui.TwitchChatGui;
 import com.linuxgods.kreiger.twitch.chat.io.SimpleStdErrAndFileLogger;
 import com.linuxgods.kreiger.twitch.chat.irc.TwitchChatClient;
+import com.linuxgods.kreiger.twitch.web.TwitchWebScraper;
 import com.linuxgods.kreiger.util.Configuration;
 import com.linuxgods.kreiger.util.ConfigurationPropertiesFile;
 import javafx.application.Application;
@@ -24,7 +24,7 @@ public class Main extends Application {
 
     public static final String NAME = "TwitchChatFilterViewer";
     private static final Configuration CONFIGURATION = ConfigurationPropertiesFile.of(NAME);
-    private static final Configuration.Key CHANNEL = Configuration.Key.of("channel", "GamesDoneQuick");
+    private static final Configuration.Key<String> CHANNEL = Configuration.Key.of("channel", "GamesDoneQuick");
 
     private static final BiPredicate<String, String> DUPLICATE_STRING = new LevenshteinDuplicateStringBiPredicate(0.75);
     private static final Duration DUPLICATE_EXPIRATION = Duration.of(1, MINUTES);
@@ -64,12 +64,14 @@ public class Main extends Application {
 
     private void connectToTwitchChannel(String channel, Consumer<TwitchChatMessage> twitchChatMessageConsumer) {
         SimpleStdErrAndFileLogger log = new SimpleStdErrAndFileLogger(channel);
-        new TwitchChatClient(log, twitchChatMessage -> {
+        TwitchChatSource chatSource = new TwitchChatClient(log, channel);
+
+        chatSource.consumeChatMessages(twitchChatMessage -> {
             log.setLogToStdErr(false);
             if (acceptableMessagePredicate.test(twitchChatMessage.getMessage())) {
                 twitchChatMessageConsumer.accept(twitchChatMessage);
             }
-        }).addChannel(channel);
+        });
     }
 
 }
