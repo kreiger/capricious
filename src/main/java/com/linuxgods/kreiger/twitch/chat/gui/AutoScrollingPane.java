@@ -4,6 +4,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
@@ -26,6 +27,7 @@ public class AutoScrollingPane extends ScrollPane {
         setVbarPolicy(NEVER);
 
         pauseScrollOnSingleClick();
+        pauseScrollOnSpacePress();
         pauseScrollWhenScrollingBack();
         unpauseScrollWhenAtBottom();
         hideScrollBarWhenPaused();
@@ -45,6 +47,14 @@ public class AutoScrollingPane extends ScrollPane {
                 if (event.getButton() == MouseButton.PRIMARY) {
                     toggleScrollPaused();
                 }
+            }
+        });
+    }
+
+    private void pauseScrollOnSpacePress() {
+        setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.SPACE) {
+                toggleScrollPaused();
             }
         });
     }
