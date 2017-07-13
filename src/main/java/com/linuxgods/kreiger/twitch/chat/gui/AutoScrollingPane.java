@@ -99,6 +99,6 @@ public class AutoScrollingPane extends ScrollPane {
         return scrollingPaused;
     }
 
-    public final StackPane getViewPort() { return (StackPane) getContent().getParent(); }
+    public final StackPane getViewPort() { return (StackPane) getContent().getParent().getParent(); }
 
 }
