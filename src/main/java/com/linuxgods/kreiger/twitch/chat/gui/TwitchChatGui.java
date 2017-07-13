@@ -12,7 +12,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -21,16 +20,16 @@ import javafx.stage.Screen;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static java.util.Arrays.asList;
-
 public class TwitchChatGui {
     private static final int FONT_SIZE = 32;
     private final MaximizedFullscreenStage maximizedFullscreenStage = new MaximizedFullscreenStage();
     private final ExpiringTextFlow textFlow = createTextFlow();
     private final AutoScrollingPane autoScrollingPane = new AutoScrollingPane(textFlow);
+    private final String channel;
 
     public TwitchChatGui(String channel, TwitchWebScraper twitchWebScraper) {
-        maximizedFullscreenStage.setTitle(channel);
+        this.channel = channel;
+        maximizedFullscreenStage.setTitle(this.channel);
         maximizedFullscreenStage.setScene(createScene());
         maximizedFullscreenStage.show();
 
@@ -55,16 +54,13 @@ public class TwitchChatGui {
     }
 
     private void stopExpiringTextsWhenScrollingIsPaused() {
-        autoScrollingPane.scrollPausedProperty().addListener((observable, oldValue, scrollPaused) -> {
+        Background grayBackground = new Background(new BackgroundFill(Color.GRAY, null, null));
+        autoScrollingPane.scrollingPausedProperty().addListener((observable, oldValue, scrollPaused) -> {
+            Platform.runLater(() -> maximizedFullscreenStage.setTitle(scrollPaused ? channel+ " (Paused)" : channel));
             textFlow.setExpiringEnabled(!scrollPaused);
-            Background grayBackground = new Background(new BackgroundFill(Color.GRAY, null, null));
             autoScrollingPane.getChildrenUnmodifiable().forEach(c -> {
-                if (StackPane.class.equals(c.getClass())) {
-                    System.out.println(c.getClass()+" exends "+c.getClass().getSuperclass()+" implements "+asList(c.getClass().getInterfaces()));
-                    ((Region)c).setBackground(scrollPaused ? grayBackground : null);
-                }
+                ((Region) c).setBackground(scrollPaused ? grayBackground : null);
             });
-
         });
     }
 
@@ -92,7 +88,9 @@ public class TwitchChatGui {
 
     public void append(TwitchChatMessage message) {
         List<Node> chatMessageTextsAndImages = createChatMessageTextsAndImages(message);
-        textFlow.append(chatMessageTextsAndImages);
+        Platform.runLater(() -> {
+            textFlow.append(chatMessageTextsAndImages);
+        });
     }
 
     private List<Node> createChatMessageTextsAndImages(TwitchChatMessage twitchChatMessage) {

@@ -1,7 +1,6 @@
 package com.linuxgods.kreiger.twitch.chat.gui;
 
 import com.linuxgods.kreiger.util.ExpiringQueue;
-import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.text.TextFlow;
 
@@ -12,9 +11,10 @@ import java.util.List;
 public class ExpiringTextFlow extends TextFlow {
     private final int KEEP_MINIMUM = 100;
     private final int KEEP_MAXIMUM = 10000;
+    private final Duration expiration = Duration.of(1, ChronoUnit.MINUTES);
+    private boolean expiringEnabled = true;
 
-    private boolean expiringEnabled;
-    private final ExpiringQueue<List<Node>> expiringQueue = new ExpiringQueue<List<Node>>(Duration.of(10, ChronoUnit.SECONDS)) {
+    private final ExpiringQueue<List<Node>> expiringQueue = new ExpiringQueue<List<Node>>(expiration) {
         @Override
         public void onRemovedExpired(List<Node> expiredNodes) {
             getChildren().removeAll(expiredNodes);
@@ -22,11 +22,9 @@ public class ExpiringTextFlow extends TextFlow {
     };
 
     public void append(List<Node> nodes) {
-        Platform.runLater(() -> {
-            removeExpired();
-            expiringQueue.add(nodes);
-            getChildren().addAll(nodes);
-        });
+        removeExpired();
+        expiringQueue.add(nodes);
+        getChildren().addAll(nodes);
     }
 
     private void removeExpired() {
