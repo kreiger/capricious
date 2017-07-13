@@ -6,12 +6,11 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Region;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -19,6 +18,9 @@ import javafx.stage.Screen;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+
+import static javafx.scene.layout.BackgroundPosition.CENTER;
+import static javafx.scene.layout.BackgroundRepeat.NO_REPEAT;
 
 public class TwitchChatGui {
     private static final int FONT_SIZE = 32;
@@ -54,13 +56,12 @@ public class TwitchChatGui {
     }
 
     private void stopExpiringTextsWhenScrollingIsPaused() {
-        Background grayBackground = new Background(new BackgroundFill(Color.GRAY, null, null));
+        BackgroundSize backgroundSize = new BackgroundSize(BackgroundSize.AUTO, 0.4, true, true, false, false);
+        Background pauseBackground = new Background(new BackgroundImage(new Image(getClass().getResourceAsStream("pause.png")), NO_REPEAT, NO_REPEAT, CENTER, backgroundSize));
         autoScrollingPane.scrollingPausedProperty().addListener((observable, oldValue, scrollPaused) -> {
             Platform.runLater(() -> maximizedFullscreenStage.setTitle(scrollPaused ? channel+ " (Paused)" : channel));
             textFlow.setExpiringEnabled(!scrollPaused);
-            autoScrollingPane.getChildrenUnmodifiable().forEach(c -> {
-                ((Region) c).setBackground(scrollPaused ? grayBackground : null);
-            });
+            autoScrollingPane.getViewPort().setBackground(scrollPaused ? pauseBackground : null);
         });
     }
 

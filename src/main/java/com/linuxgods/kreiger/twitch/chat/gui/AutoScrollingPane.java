@@ -8,6 +8,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 
 import static javafx.scene.control.ScrollPane.ScrollBarPolicy.ALWAYS;
 import static javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER;
@@ -97,4 +98,7 @@ public class AutoScrollingPane extends ScrollPane {
     public ObservableBooleanValue scrollingPausedProperty() {
         return scrollingPaused;
     }
+
+    public final StackPane getViewPort() { return (StackPane) getContent().getParent(); }
+
 }
