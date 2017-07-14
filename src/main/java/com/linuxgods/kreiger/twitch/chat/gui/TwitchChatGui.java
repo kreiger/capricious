@@ -8,9 +8,9 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -59,7 +59,7 @@ public class TwitchChatGui {
         BackgroundSize backgroundSize = new BackgroundSize(BackgroundSize.AUTO, 0.4, true, true, false, false);
         Background pauseBackground = new Background(new BackgroundImage(new Image(getClass().getResourceAsStream("pause.png")), NO_REPEAT, NO_REPEAT, CENTER, backgroundSize));
         autoScrollingPane.scrollingPausedProperty().addListener((observable, oldValue, scrollPaused) -> {
-            Platform.runLater(() -> maximizedFullscreenStage.setTitle(scrollPaused ? channel+ " (Paused)" : channel));
+            Platform.runLater(() -> maximizedFullscreenStage.setTitle(scrollPaused ? channel + " (Paused)" : channel));
             textFlow.setExpiringEnabled(!scrollPaused);
             autoScrollingPane.getViewPort().setBackground(scrollPaused ? pauseBackground : null);
         });
@@ -78,13 +78,9 @@ public class TwitchChatGui {
     }
 
     private void fullScreenOnDoubleClick() {
-        maximizedFullscreenStage.getScene().setOnMouseClicked(new SingleOrDoubleClickMouseEventHandler() {
-            public void doubleClick(MouseEvent event) {
-                if (event.getButton() == MouseButton.PRIMARY) {
-                    maximizedFullscreenStage.toggleMaximized();
-                }
-            }
-        });
+        SingleOrDoubleClickMouseEventHandler
+                .on(maximizedFullscreenStage.getScene())
+                .setOnDoubleClick(event -> maximizedFullscreenStage.toggleMaximized());
     }
 
     public void append(TwitchChatMessage message) {

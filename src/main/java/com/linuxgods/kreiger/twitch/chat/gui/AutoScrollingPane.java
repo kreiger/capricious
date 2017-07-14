@@ -5,8 +5,6 @@ import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 
@@ -51,13 +49,9 @@ public class AutoScrollingPane extends ScrollPane {
     }
 
     private void pauseScrollOnSingleClick() {
-        setOnMousePressed(new SingleOrDoubleClickMouseEventHandler() {
-            public void singleClick(MouseEvent event) {
-                if (event.getButton() == MouseButton.PRIMARY) {
-                    toggleScrollingPaused();
-                }
-            }
-        });
+        SingleOrDoubleClickMouseEventHandler
+                .on(this)
+                .setOnSingleClick(event -> toggleScrollingPaused());
     }
 
     private void pauseScrollOnSpacePress() {
