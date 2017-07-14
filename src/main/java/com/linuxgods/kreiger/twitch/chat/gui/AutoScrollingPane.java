@@ -37,6 +37,7 @@ public class AutoScrollingPane extends ScrollPane {
                 scrollToBottomUnlessPaused();
             }
         });
+        scrollToBottomUnlessPaused();
     }
 
     private void showScrollBarWhenPaused() {
