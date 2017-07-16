@@ -1,5 +1,8 @@
 package com.linuxgods.kreiger.twitch.chat.gui;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.value.ObservableBooleanValue;
@@ -7,12 +10,15 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.util.Duration;
 
 import static javafx.scene.control.ScrollPane.ScrollBarPolicy.ALWAYS;
 import static javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER;
 
 public class AutoScrollingPane extends ScrollPane {
-    private BooleanProperty scrollingPaused = new ReadOnlyBooleanWrapper();
+    private static final Duration SCROLL_DURATION = Duration.millis(1000);
+    private final BooleanProperty scrollingPaused = new ReadOnlyBooleanWrapper();
+    private final Timeline scrollToBottomAnimation = new Timeline(new KeyFrame(SCROLL_DURATION, new KeyValue(vvalueProperty(), getVmax())));
     private boolean layoutIsBeingUpdated;
 
     public AutoScrollingPane(Region region) {
@@ -28,7 +34,7 @@ public class AutoScrollingPane extends ScrollPane {
     }
 
     private void keepScrollingToBottomWhUpdatingLayout() {
-        getContent().layoutBoundsProperty().addListener(contentLayboutBoundsInvalidated -> {
+        getContent().layoutBoundsProperty().addListener(contentLayoutBoundsInvalidated -> {
             layoutIsBeingUpdated = true;
         });
         vvalueProperty().addListener((observable, oldValue, newValue) -> {
@@ -37,7 +43,7 @@ public class AutoScrollingPane extends ScrollPane {
                 scrollToBottomUnlessPaused();
             }
         });
-        scrollToBottomUnlessPaused();
+        jumpToBottom();
     }
 
     private void showScrollBarWhenPaused() {
@@ -52,41 +58,63 @@ public class AutoScrollingPane extends ScrollPane {
     private void pauseScrollOnSingleClick() {
         SingleOrDoubleClickMouseEventHandler
                 .on(this)
-                .setOnSingleClick(event -> toggleScrollingPaused());
+                .setOnSingleClick(event -> toggleScrollingPausedXorJumpToBottom());
     }
 
     private void pauseScrollOnSpacePress() {
         setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.SPACE) {
-                toggleScrollingPaused();
+                toggleScrollingPausedXorJumpToBottom();
             }
         });
     }
 
+    public void toggleScrollingPausedXorJumpToBottom() {
+        toggleScrollingPaused();
+        if (!isScrollingPaused()) {
+            jumpToBottom();
+        }
+        scrollToBottomAnimation.pause();
+    }
+
+    private void jumpToBottom() {
+        setVvalue(getVmax());
+    }
+
     private void toggleScrollPausedWhenScrolling() {
         vvalueProperty().addListener((observable, oldValue, newValue) -> {
-            if (!layoutIsBeingUpdated) {
-                setScrollingPaused(newValue.doubleValue() < getVmax());
+            if (layoutIsBeingUpdated) {
+                return;
+            }
+            boolean scrollingUp = newValue.doubleValue() < oldValue.doubleValue();
+            if (scrollingUp) {
+                setScrollingPaused(true);
+                scrollToBottomAnimation.pause();
+                return;
+            }
+            boolean atBottom = newValue.doubleValue() == getVmax();
+            if (atBottom) {
+                setScrollingPaused(false);
+                scrollToBottomAnimation.pause();
             }
         });
     }
 
     private void scrollToBottomUnlessPaused() {
-        if (!getScrollingPaused()) {
-            setVvalue(getVmax());
+        if (!isScrollingPaused()) {
+            scrollToBottomAnimation.playFromStart();
         }
     }
 
-    public void toggleScrollingPaused() {
-        setScrollingPaused(!getScrollingPaused());
-        scrollToBottomUnlessPaused();
+    private void toggleScrollingPaused() {
+        setScrollingPaused(!isScrollingPaused());
     }
 
     public void setScrollingPaused(boolean paused) {
         scrollingPaused.set(paused);
     }
 
-    public boolean getScrollingPaused() {
+    public boolean isScrollingPaused() {
         return scrollingPaused.get();
     }
 
@@ -94,6 +122,8 @@ public class AutoScrollingPane extends ScrollPane {
         return scrollingPaused;
     }
 
-    public final StackPane getViewPort() { return (StackPane) getContent().getParent().getParent(); }
+    public final StackPane getViewPort() {
+        return (StackPane) getContent().getParent().getParent();
+    }
 
 }

@@ -24,6 +24,8 @@ import static javafx.scene.layout.BackgroundRepeat.NO_REPEAT;
 
 public class TwitchChatGui {
     private static final int FONT_SIZE = 32;
+    private static final int WIDTH = FONT_SIZE * 20;
+    private static final double HEIGHT = Screen.getPrimary().getVisualBounds().getHeight();
     private final MaximizedFullscreenStage maximizedFullscreenStage = new MaximizedFullscreenStage();
     private final ExpiringTextFlow textFlow = createTextFlow();
     private final AutoScrollingPane autoScrollingPane = new AutoScrollingPane(textFlow);
@@ -32,11 +34,12 @@ public class TwitchChatGui {
     public TwitchChatGui(String channel, TwitchWebScraper twitchWebScraper) {
         this.channel = channel;
         maximizedFullscreenStage.setTitle(this.channel);
-        maximizedFullscreenStage.setScene(createScene());
+        Scene scene = new Scene(autoScrollingPane, WIDTH, HEIGHT);
+        maximizedFullscreenStage.setScene(scene);
         maximizedFullscreenStage.show();
 
         setWindowIconToChannelImage(channel, twitchWebScraper);
-        stopExpiringTextsWhenScrollingIsPaused();
+        setTitleAndBackgroundAndStopExpiringTextsWhenScrollingIsPaused();
         fullScreenOnDoubleClick();
         setExitOnClose();
     }
@@ -55,7 +58,7 @@ public class TwitchChatGui {
                 .thenAccept(image -> Platform.runLater(() -> maximizedFullscreenStage.getIcons().add(image)));
     }
 
-    private void stopExpiringTextsWhenScrollingIsPaused() {
+    private void setTitleAndBackgroundAndStopExpiringTextsWhenScrollingIsPaused() {
         BackgroundSize backgroundSize = new BackgroundSize(BackgroundSize.AUTO, 0.4, true, true, false, false);
         Background pauseBackground = new Background(new BackgroundImage(new Image(getClass().getResourceAsStream("pause.png")), NO_REPEAT, NO_REPEAT, CENTER, backgroundSize));
         autoScrollingPane.scrollingPausedProperty().addListener((observable, oldValue, scrollPaused) -> {
@@ -70,11 +73,6 @@ public class TwitchChatGui {
         textFlow.setPadding(new Insets(20));
         textFlow.setLineSpacing(20);
         return textFlow;
-    }
-
-    private Scene createScene() {
-        Scene scene = new Scene(autoScrollingPane, FONT_SIZE * 20, Screen.getPrimary().getVisualBounds().getHeight());
-        return scene;
     }
 
     private void fullScreenOnDoubleClick() {
