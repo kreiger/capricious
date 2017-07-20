@@ -2,6 +2,7 @@ package com.linuxgods.kreiger.twitch.chat;
 
 import com.linuxgods.kreiger.twitch.chat.filter.FewDuplicatesMessagePredicate;
 import com.linuxgods.kreiger.twitch.chat.filter.LevenshteinDuplicateStringBiPredicate;
+import com.linuxgods.kreiger.twitch.chat.filter.RepetitionPredicate;
 import com.linuxgods.kreiger.twitch.chat.gui.TwitchChatGui;
 import com.linuxgods.kreiger.twitch.chat.io.SimpleStdErrAndFileLogger;
 import com.linuxgods.kreiger.twitch.chat.irc.TwitchChatClient;
@@ -22,15 +23,17 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 
 public class Main extends Application {
 
-    public static final String NAME = "TwitchChatFilterViewer";
+    private static final String NAME = "TwitchChatFilterViewer";
     private static final Configuration CONFIGURATION = ConfigurationPropertiesFile.of(NAME);
     private static final Configuration.Key<String> CHANNEL = Configuration.Key.of("channel", "GamesDoneQuick");
 
     private static final BiPredicate<String, String> DUPLICATE_STRING = new LevenshteinDuplicateStringBiPredicate(0.75);
     private static final Duration DUPLICATE_EXPIRATION = Duration.of(1, MINUTES);
     private static final int DUPLICATE_ACCEPTANCE_RATE = 10;
+    private static final int REPETITION_MIN_CHECKED_LENGTH = 16;
 
-    private Predicate<String> acceptableMessagePredicate = new FewDuplicatesMessagePredicate(DUPLICATE_ACCEPTANCE_RATE, DUPLICATE_EXPIRATION, DUPLICATE_STRING);
+    private Predicate<String> acceptableMessagePredicate = new FewDuplicatesMessagePredicate(DUPLICATE_ACCEPTANCE_RATE, DUPLICATE_EXPIRATION, DUPLICATE_STRING)
+            .and(new RepetitionPredicate(REPETITION_MIN_CHECKED_LENGTH));
 
     public static void main(String[] args) throws InterruptedException {
         launch(args);
@@ -41,14 +44,14 @@ public class Main extends Application {
         String previousChannel = CONFIGURATION.getString(CHANNEL);
 
         askForTwitchChannel(previousChannel).ifPresent(channel -> {
-            setAndSaveChannel(channel);
+            saveChannel(channel);
             TwitchChatGui twitchChatGui = new TwitchChatGui(channel, new TwitchWebScraper());
 
             connectToTwitchChannel(channel, twitchChatGui::append);
         });
     }
 
-    private void setAndSaveChannel(String channel) {
+    private void saveChannel(String channel) {
         CONFIGURATION.setString(CHANNEL, channel);
         CONFIGURATION.save();
     }
