@@ -2,115 +2,128 @@ package com.linuxgods.kreiger.util;
 
 import one.util.streamex.StreamEx;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import static java.lang.Math.min;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.toList;
 
-public class SuffixArray {
+public class SuffixArray<T extends Comparable> {
 
-    private final String string;
-    private final Suffix[] suffixes;
+    private final List<? extends T> elements;
+    private final List<Suffix> suffixes;
 
-    public SuffixArray(String string) {
-        if (string.isEmpty()) {
-            throw new IllegalArgumentException("Empty string.");
+    public SuffixArray(List<? extends T> elements) {
+        if (elements.isEmpty()) {
+            throw new IllegalArgumentException("Empty list.");
         }
-        this.string = string;
-        this.suffixes = IntStream.range(0, string.length())
+        this.elements = elements;
+        this.suffixes = IntStream.range(0, elements.size())
                 .mapToObj(Suffix::new)
                 .sorted()
-                .toArray(Suffix[]::new);
+                .collect(toList());
+    }
+
+    public List<Suffix> getSuffixes() {
+        return unmodifiableList(suffixes);
     }
 
     public CommonPrefixes getCommonPrefixes() {
-        if (string.length() < 2) {
-            throw new IllegalArgumentException("String length < 2");
+        if (elements.size() < 2) {
+            throw new IllegalArgumentException("size < 2");
         }
         return new CommonPrefixes();
     }
 
-    public class Suffix implements CharSequence, Comparable<Suffix> {
+    public class Suffix implements Comparable<Suffix> {
         private final int index;
-        private final int length;
+        private final int size;
 
         private Suffix(int index) {
             this.index = index;
-            this.length = string.length() - index;
+            this.size = elements.size() - index;
         }
 
         @Override
         public int compareTo(Suffix that) {
             int maxLength = getCommonPrefixMaxLength(that);
             for (int i = 0; i < maxLength; i++) {
-                int charComparison = Character.compare(this.charAt(i), that.charAt(i));
-                if (charComparison != 0) {
-                    return charComparison;
+                int comparison = this.get(i).compareTo(that.get(i));
+                if (comparison != 0) {
+                    return comparison;
                 }
             }
-            return Integer.compare(this.length, that.length);
+            return Integer.compare(this.size, that.size);
         }
 
         private int getCommonPrefixMaxLength(Suffix that) {
-            return min(this.length, that.length);
+            return min(this.size, that.size);
         }
 
-        @Override
-        public int length() {
-            return length;
+        public int size() {
+            return size;
         }
 
-        @Override
-        public char charAt(int index) {
-            return string.charAt(this.index+index);
+        public T get(int index) {
+            return elements.get(this.index+index);
         }
 
-        @Override
-        public CharSequence subSequence(int start, int end) {
-            return string.subSequence(index+start, index+end);
-        }
-
-        private Prefix getCommonPrefix(Suffix that) {
+        private CommonPrefix getCommonPrefix(Suffix that) {
             int maxLength = getCommonPrefixMaxLength(that);
             for (int i = 0; i < maxLength; i++) {
-                int charComparison = Character.compare(this.charAt(i), that.charAt(i));
-                if (charComparison != 0) {
-                    return new Prefix(i);
+                int comparison = this.get(i).compareTo(that.get(i));
+                if (comparison != 0) {
+                    return new CommonPrefix(i, this, that);
                 }
             }
-            return new Prefix(maxLength);
+            return new CommonPrefix(maxLength, this, that);
         }
 
         @Override
         public String toString() {
-            return string.substring(index);
+            return elements.subList(index, elements.size()).toString();
         }
 
-        public class Prefix {
-            private final int length;
-            private Prefix(int length) {
-                this.length = length;
+        public int getIndex() {
+            return index;
+        }
+
+        public class CommonPrefix {
+            private final int size;
+            private final List<Suffix> suffixes;
+
+            private CommonPrefix(int size, Suffix... suffixes) {
+                this.size = size;
+                this.suffixes = asList(suffixes);
             }
 
-            public int length() {
-                return length;
+            public int size() {
+                return size;
             }
 
             @Override
             public String toString() {
-                return string.substring(index, index+length);
+                return elements.subList(index, index+ size).toString();
+            }
+
+            public List<Suffix> getSuffixes() {
+                return suffixes;
             }
         }
     }
 
     public class CommonPrefixes {
 
-        public StreamEx<Suffix.Prefix> stream() {
+        public StreamEx<Suffix.CommonPrefix> stream() {
             return StreamEx.of(suffixes)
                     .pairMap(Suffix::getCommonPrefix);
         }
 
-        public int length() {
-            return string.length() - 1;
+        public int size() {
+            return elements.size() - 1;
         }
 
     }

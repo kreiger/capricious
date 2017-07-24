@@ -17,7 +17,6 @@ repositories {
 
 dependencies {
     compile 'org.kitteh.irc:client-lib:3.2.0'
-    compile 'info.debatty:java-string-similarity:0.24'
     compile group: 'net.harawata', name: 'appdirs', version: '1.0.0'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
     compile 'net.java.dev.jna:jna-platform:4.2.2'

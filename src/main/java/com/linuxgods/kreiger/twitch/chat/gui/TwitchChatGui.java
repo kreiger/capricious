@@ -15,10 +15,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Screen;
+import one.util.streamex.StreamEx;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static java.util.stream.Collectors.toList;
 import static javafx.scene.layout.BackgroundPosition.CENTER;
 import static javafx.scene.layout.BackgroundRepeat.NO_REPEAT;
 
@@ -83,37 +85,38 @@ public class TwitchChatGui {
 
     public void append(TwitchChatMessage message) {
         List<Node> chatMessageTextsAndImages = createChatMessageTextsAndImages(message);
-        Platform.runLater(() -> {
-            textFlow.append(chatMessageTextsAndImages);
-        });
+        Platform.runLater(() -> textFlow.append(chatMessageTextsAndImages));
     }
 
     private List<Node> createChatMessageTextsAndImages(TwitchChatMessage twitchChatMessage) {
-        return twitchChatMessage.accept(new NodeFactory(twitchChatMessage));
+        return StreamEx.of(twitchChatMessage.stream())
+                .append(new TwitchChatMessage.Text(twitchChatMessage.toString().length(), "\n"))
+                .map(part -> part.accept(new NodeFactory(twitchChatMessage)))
+                .collect(toList());
     }
 
-    private static class NodeFactory implements TwitchChatMessage.TextOrEmoteVisitor<Node> {
+    private static class NodeFactory implements TwitchChatMessage.Visitor<Node> {
         private final TwitchChatMessage twitchChatMessage;
 
-        public NodeFactory(TwitchChatMessage twitchChatMessage) {
+        NodeFactory(TwitchChatMessage twitchChatMessage) {
             this.twitchChatMessage = twitchChatMessage;
         }
 
         @Override
-        public Node visitText(String message) {
+        public Node visitText(TwitchChatMessage.Text message) {
             return createText(message);
         }
 
-        private Node createText(String message) {
-            Text text = new Text(message);
+        private Node createText(TwitchChatMessage.Text message) {
+            Text text = new Text(message.toString());
             text.setFont(new Font(FONT_SIZE));
             twitchChatMessage.getColor().map(Color::web).ifPresent(text::setFill);
             return text;
         }
 
         @Override
-        public Node visitEmote(String url) {
-            return createImage(url);
+        public Node visitEmote(TwitchChatMessage.Emote emote) {
+            return createImage(emote.getUrl());
         }
 
         private Node createImage(String url) {

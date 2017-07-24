@@ -16,10 +16,10 @@ import static javafx.scene.control.ScrollPane.ScrollBarPolicy.ALWAYS;
 import static javafx.scene.control.ScrollPane.ScrollBarPolicy.NEVER;
 
 public class AutoScrollingPane extends ScrollPane {
-    private static final Duration SCROLL_DURATION = Duration.millis(1000);
+    private static final Duration SCROLL_DURATION = Duration.millis(2000);
     private static final double EPSILON = 0.001;
     private final BooleanProperty scrollingPaused = new ReadOnlyBooleanWrapper();
-    private final Timeline scrollToBottomAnimation = new Timeline(new KeyFrame(SCROLL_DURATION, new KeyValue(vvalueProperty(), getVmax() - EPSILON)));
+    private final Timeline scrollToBottomAnimation = new Timeline(new KeyFrame(SCROLL_DURATION, new KeyValue(vvalueProperty(), getVmax())));
     private boolean layoutIsBeingUpdated;
 
     public AutoScrollingPane(Region region) {

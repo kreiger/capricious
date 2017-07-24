@@ -1,7 +1,7 @@
 package com.linuxgods.kreiger.twitch.chat;
 
-import com.linuxgods.kreiger.twitch.chat.filter.FewDuplicatesMessagePredicate;
-import com.linuxgods.kreiger.twitch.chat.filter.LevenshteinDuplicateStringBiPredicate;
+import com.linuxgods.kreiger.twitch.chat.filter.FewDuplicatesPredicate;
+import com.linuxgods.kreiger.twitch.chat.filter.LevenshteinDuplicateBiPredicate;
 import com.linuxgods.kreiger.twitch.chat.filter.RepetitionPredicate;
 import com.linuxgods.kreiger.twitch.chat.gui.TwitchChatGui;
 import com.linuxgods.kreiger.twitch.chat.io.SimpleStdErrAndFileLogger;
@@ -14,6 +14,7 @@ import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -27,13 +28,17 @@ public class Main extends Application {
     private static final Configuration CONFIGURATION = ConfigurationPropertiesFile.of(NAME);
     private static final Configuration.Key<String> CHANNEL = Configuration.Key.of("channel", "GamesDoneQuick");
 
-    private static final BiPredicate<String, String> DUPLICATE_STRING = new LevenshteinDuplicateStringBiPredicate(0.75);
     private static final Duration DUPLICATE_EXPIRATION = Duration.of(1, MINUTES);
     private static final int DUPLICATE_ACCEPTANCE_RATE = 10;
-    private static final int REPETITION_MIN_CHECKED_LENGTH = 16;
+    private static final BiPredicate<List<Integer>, List<Integer>> DUPLICATE_MESSAGE = new LevenshteinDuplicateBiPredicate<>(0.75);
+    private static final Predicate<TwitchChatMessage> FEW_DUPLICATES_PREDICATE = new FewDuplicatesPredicate(DUPLICATE_ACCEPTANCE_RATE, DUPLICATE_EXPIRATION, DUPLICATE_MESSAGE);
 
-    private Predicate<String> acceptableMessagePredicate = new FewDuplicatesMessagePredicate(DUPLICATE_ACCEPTANCE_RATE, DUPLICATE_EXPIRATION, DUPLICATE_STRING)
-            .and(new RepetitionPredicate(REPETITION_MIN_CHECKED_LENGTH));
+    private static final int REPETITION_MIN_CHECKED_LENGTH = 16;
+    private static final double REPETITION_LIMIT = 0.4;
+    private static final int MIN_REPEATED_SUBSTRING_LENGTH = 3;
+    private static final Predicate<TwitchChatMessage> REPETITION_PREDICATE = new RepetitionPredicate(REPETITION_MIN_CHECKED_LENGTH, REPETITION_LIMIT, MIN_REPEATED_SUBSTRING_LENGTH);
+
+    private final Predicate<TwitchChatMessage> messagePredicate = FEW_DUPLICATES_PREDICATE.and(REPETITION_PREDICATE);
 
     public static void main(String[] args) throws InterruptedException {
         launch(args);
@@ -71,7 +76,7 @@ public class Main extends Application {
 
         chatSource.consumeChatMessages(twitchChatMessage -> {
             log.setLogToStdErr(false);
-            if (acceptableMessagePredicate.test(twitchChatMessage.getMessage())) {
+            if (messagePredicate.test(twitchChatMessage)) {
                 twitchChatMessageConsumer.accept(twitchChatMessage);
             }
         });

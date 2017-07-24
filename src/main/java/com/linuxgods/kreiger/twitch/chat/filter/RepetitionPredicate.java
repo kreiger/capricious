@@ -1,48 +1,50 @@
 package com.linuxgods.kreiger.twitch.chat.filter;
 
+import com.linuxgods.kreiger.twitch.chat.TwitchChatMessage;
 import com.linuxgods.kreiger.util.SuffixArray;
 
+import java.util.BitSet;
+import java.util.List;
 import java.util.function.Predicate;
 
-import static one.util.streamex.DoubleCollector.summarizing;
+public class RepetitionPredicate implements Predicate<TwitchChatMessage> {
 
-public class RepetitionPredicate implements Predicate<String> {
-
-    private static final double REPETITION_LIMIT = 0.15;
+    private final int minRepeatedSubstringLength;
+    private final double repetitionLimit;
     private final int minCheckedLength;
 
-    public RepetitionPredicate(int minCheckedLength) {
+    public RepetitionPredicate(int minCheckedLength, double repetitionLimit, int minRepeatedSubstringLength) {
         this.minCheckedLength = minCheckedLength;
+        this.repetitionLimit = repetitionLimit;
+        this.minRepeatedSubstringLength = minRepeatedSubstringLength;
     }
 
     @Override
-    public boolean test(String input) {
-        String trimmedInput = input.replaceAll("\\s+", "");
-        if (trimmedInput.length() < minCheckedLength) {
+    public boolean test(TwitchChatMessage input) {
+        List<Integer> messageInts = input.toInts();
+        if (messageInts.size() < minCheckedLength) {
             return true;
         }
-        String lowerCaseTrimmedInput = trimmedInput.toLowerCase();
-
-        int length = lowerCaseTrimmedInput.length();
-        double repetition = getRepetition(lowerCaseTrimmedInput);
-        if (repetition < REPETITION_LIMIT) {
+        double repetition = getRepetition(messageInts);
+        if (repetition < repetitionLimit) {
             return true;
         }
-        System.err.println("Ignoring repeated "+repetition+" of "+ length +": "+input);
+        System.err.println("Ignoring repeated " + ((int) (repetition * 100)) + "%: " + input);
         return false;
     }
 
-    static double getRepetition(String input) {
-        if (input.length() < 2) {
-            return 0;
-        }
-        SuffixArray.CommonPrefixes commonPrefixes = new SuffixArray(input)
-                .getCommonPrefixes();
-        double repetition = commonPrefixes.stream()
-                .mapToDouble(SuffixArray.Suffix.Prefix::length)
-                .collect(summarizing())
-                .getAverage();
-        return repetition / commonPrefixes.length();
+    private double getRepetition(List<Integer> messageInts) {
+        BitSet duplicatedCharacters = new SuffixArray<>(messageInts)
+                .getCommonPrefixes().stream()
+                .filter(prefix -> prefix.size() >= minRepeatedSubstringLength)
+                .collect(() -> new BitSet(messageInts.size()), (bitSet, prefix) -> {
+                    SuffixArray<Integer>.Suffix suffix = prefix.getSuffixes().get(0);
+                    int from = suffix.getIndex();
+                    int to = from + prefix.size();
+                    bitSet.set(from, to);
+                }, BitSet::or);
+
+        return ((double) duplicatedCharacters.cardinality()) / messageInts.size();
     }
 
 }
