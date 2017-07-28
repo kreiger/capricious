@@ -21,12 +21,12 @@ public class LevenshteinDuplicateBiPredicate<T> implements BiPredicate<List<T>, 
         int longestStringLength = Math.max(previous.size(), potentialDuplicate.size());
         int distanceThreshold = longestStringLength - (int)(duplicateSimilarityThreshold * longestStringLength);
 
-        double distance = LevenshteinDistance.limitedCompare(previous, potentialDuplicate, distanceThreshold);
+        int distance = LevenshteinDistance.limitedCompare(previous, potentialDuplicate, distanceThreshold);
 
         return tooSimilar(distanceThreshold, distance);
     }
 
-    private boolean tooSimilar(int distanceThreshold, double distance) {
+    private boolean tooSimilar(int distanceThreshold, int distance) {
         return -1 != distance && distance < distanceThreshold;
     }
 
