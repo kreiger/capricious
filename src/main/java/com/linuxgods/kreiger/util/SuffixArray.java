@@ -2,7 +2,6 @@ package com.linuxgods.kreiger.util;
 
 import one.util.streamex.StreamEx;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 

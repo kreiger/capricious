@@ -1,4 +1,4 @@
-package com.linuxgods.kreiger.twitch.chat.gui;
+package com.linuxgods.kreiger.capricious.twitch.chat.gui;
 
 import io.netty.util.concurrent.DefaultThreadFactory;
 import javafx.event.EventHandler;

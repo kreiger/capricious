@@ -1,6 +1,6 @@
-package com.linuxgods.kreiger.twitch.chat.irc;
+package com.linuxgods.kreiger.capricious.twitch.chat.irc;
 
-import com.linuxgods.kreiger.twitch.chat.TwitchChatMessage;
+import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatMessage;
 import org.kitteh.irc.client.library.element.MessageTag;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
 import org.kitteh.irc.client.library.feature.twitch.messagetag.Emotes;

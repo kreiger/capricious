@@ -1,4 +1,4 @@
-package com.linuxgods.kreiger.twitch.chat.io;
+package com.linuxgods.kreiger.capricious.twitch.chat.io;
 
 import java.io.IOException;
 import java.io.PrintWriter;

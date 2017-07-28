@@ -1,4 +1,4 @@
-package com.linuxgods.kreiger.twitch.chat;
+package com.linuxgods.kreiger.capricious.twitch.chat;
 
 import java.time.Instant;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package com.linuxgods.kreiger.twitch.web;
+package com.linuxgods.kreiger.capricious.twitch.web;
 
 import javafx.scene.image.Image;
 

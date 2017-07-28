@@ -1,14 +1,14 @@
-# Twitch Chat Filter Viewer
+# Capricious
 ## Filtering Twitch Chat Viewer written in Java
 
 Following the Twitch chat of a channel during a popular event can be really hard.
 
-This simple viewer will filter out the duplicate messages.
+Capricious is a simple Twitch chat viewer that will filter out the duplicate messages.
 
 ## How to use
 
-1. Build it with `./gradlew build`
-2. Run the Viewer with `java -jar build/libs/TwitchChatFilterViewer.jar` or `./gradlew run`.
+1. Build Capricious with `./gradlew build`
+2. Run Capricious with `java -jar build/libs/capricious.jar` or `./gradlew run`.
 3. You will be asked for the name of a Twitch channel, e.g. "GamesDoneQuick".
 4. Press OK.
 5. You're now viewing the Twitch Chat for that channel, without the duplicate messages.

@@ -1,13 +1,13 @@
-group 'com.linuxgods.kreiger.twitch.chat'
+group 'com.linuxgods.kreiger'
 version '1.0'
 
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: "com.github.johnrengelman.shadow"
 
-mainClassName = 'com.linuxgods.kreiger.twitch.chat.Main'
+mainClassName = 'com.linuxgods.kreiger.capricious.Main'
 
-shadowJar.archiveName = 'TwitchChatFilterViewer.jar'
+shadowJar.archiveName = 'capricious.jar'
 
 sourceCompatibility = 1.8
 

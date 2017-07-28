@@ -1,6 +1,6 @@
-package com.linuxgods.kreiger.twitch.chat.filter;
+package com.linuxgods.kreiger.capricious.twitch.chat.filter;
 
-import com.linuxgods.kreiger.twitch.chat.TwitchChatMessage;
+import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatMessage;
 import com.linuxgods.kreiger.util.ExpiringQueue;
 
 import java.time.Duration;

@@ -1,7 +1,7 @@
-package com.linuxgods.kreiger.twitch.chat.irc;
+package com.linuxgods.kreiger.capricious.twitch.chat.irc;
 
-import com.linuxgods.kreiger.twitch.chat.TwitchChatMessage;
-import com.linuxgods.kreiger.twitch.chat.TwitchChatSource;
+import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatMessage;
+import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatSource;
 import net.engio.mbassy.listener.Handler;
 import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;

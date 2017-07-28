@@ -1,4 +1,4 @@
-package com.linuxgods.kreiger.twitch.chat.gui;
+package com.linuxgods.kreiger.capricious.twitch.chat.gui;
 
 import com.linuxgods.kreiger.util.ExpiringQueue;
 import javafx.scene.Node;

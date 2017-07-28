@@ -1,4 +1,4 @@
-package com.linuxgods.kreiger.twitch.chat.filter;
+package com.linuxgods.kreiger.capricious.twitch.chat.filter;
 
 import com.linuxgods.kreiger.util.org.apache.commons.text.similarity.LevenshteinDistance;
 

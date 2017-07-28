@@ -1,12 +1,14 @@
-package com.linuxgods.kreiger.twitch.chat;
+package com.linuxgods.kreiger.capricious;
 
-import com.linuxgods.kreiger.twitch.chat.filter.FewDuplicatesPredicate;
-import com.linuxgods.kreiger.twitch.chat.filter.LevenshteinDuplicateBiPredicate;
-import com.linuxgods.kreiger.twitch.chat.filter.RepetitionPredicate;
-import com.linuxgods.kreiger.twitch.chat.gui.TwitchChatGui;
-import com.linuxgods.kreiger.twitch.chat.io.SimpleStdErrAndFileLogger;
-import com.linuxgods.kreiger.twitch.chat.irc.TwitchChatClient;
-import com.linuxgods.kreiger.twitch.web.TwitchWebScraper;
+import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatMessage;
+import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatSource;
+import com.linuxgods.kreiger.capricious.twitch.chat.filter.FewDuplicatesPredicate;
+import com.linuxgods.kreiger.capricious.twitch.chat.filter.LevenshteinDuplicateBiPredicate;
+import com.linuxgods.kreiger.capricious.twitch.chat.filter.RepetitionPredicate;
+import com.linuxgods.kreiger.capricious.twitch.chat.gui.TwitchChatGui;
+import com.linuxgods.kreiger.capricious.twitch.chat.io.SimpleStdErrAndFileLogger;
+import com.linuxgods.kreiger.capricious.twitch.chat.irc.TwitchChatClient;
+import com.linuxgods.kreiger.capricious.twitch.web.TwitchWebScraper;
 import com.linuxgods.kreiger.util.Configuration;
 import com.linuxgods.kreiger.util.ConfigurationPropertiesFile;
 import javafx.application.Application;
@@ -24,7 +26,8 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 
 public class Main extends Application {
 
-    private static final String NAME = "TwitchChatFilterViewer";
+    private static final String NAME = "Capricious";
+
     private static final Configuration CONFIGURATION = ConfigurationPropertiesFile.of(NAME);
     private static final Configuration.Key<String> CHANNEL = Configuration.Key.of("channel", "GamesDoneQuick");
 

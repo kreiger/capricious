@@ -1,7 +1,7 @@
-package com.linuxgods.kreiger.twitch.chat.gui;
+package com.linuxgods.kreiger.capricious.twitch.chat.gui;
 
-import com.linuxgods.kreiger.twitch.chat.TwitchChatMessage;
-import com.linuxgods.kreiger.twitch.web.TwitchWebScraper;
+import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatMessage;
+import com.linuxgods.kreiger.capricious.twitch.web.TwitchWebScraper;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
