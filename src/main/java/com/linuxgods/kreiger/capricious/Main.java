@@ -14,7 +14,10 @@ import com.linuxgods.kreiger.util.ConfigurationPropertiesFile;
 import javafx.application.Application;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
+import net.harawata.appdirs.AppDirsFactory;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -74,7 +77,7 @@ public class Main extends Application {
     }
 
     private void connectToTwitchChannel(String channel, Consumer<TwitchChatMessage> twitchChatMessageConsumer) {
-        SimpleStdErrAndFileLogger log = new SimpleStdErrAndFileLogger(channel);
+        SimpleStdErrAndFileLogger log = new SimpleStdErrAndFileLogger(getLogDirectory(), channel);
         TwitchChatSource chatSource = new TwitchChatClient(log, channel);
 
         chatSource.consumeChatMessages(twitchChatMessage -> {
@@ -83,6 +86,10 @@ public class Main extends Application {
                 twitchChatMessageConsumer.accept(twitchChatMessage);
             }
         });
+    }
+
+    private static Path getLogDirectory() {
+        return Paths.get(AppDirsFactory.getInstance().getUserLogDir(NAME, null, null));
     }
 
 }

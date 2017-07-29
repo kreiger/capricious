@@ -59,9 +59,13 @@ public class ConfigurationPropertiesFile implements Configuration {
     }
 
     public static ConfigurationPropertiesFile of(String name) {
-        Path userConfigDir = Paths.get(AppDirsFactory.getInstance().getUserConfigDir(name, null, null, true));
+        Path userConfigDir = getConfigDirectory(name);
         Path file = userConfigDir.resolve(name + ".properties");
         return new ConfigurationPropertiesFile(file);
+    }
+
+    private static Path getConfigDirectory(String name) {
+        return Paths.get(AppDirsFactory.getInstance().getUserConfigDir(name, null, null, true));
     }
 
 }
