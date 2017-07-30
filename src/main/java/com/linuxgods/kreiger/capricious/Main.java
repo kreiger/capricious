@@ -1,18 +1,20 @@
 package com.linuxgods.kreiger.capricious;
 
+import com.linuxgods.kreiger.capricious.gui.ChatGui;
+import com.linuxgods.kreiger.capricious.gui.ChatSelectionDialog;
+import com.linuxgods.kreiger.capricious.twitch.api.Channel;
+import com.linuxgods.kreiger.capricious.twitch.api.TwitchApi;
 import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatMessage;
 import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatSource;
 import com.linuxgods.kreiger.capricious.twitch.chat.filter.FewDuplicatesPredicate;
 import com.linuxgods.kreiger.capricious.twitch.chat.filter.LevenshteinDuplicateBiPredicate;
 import com.linuxgods.kreiger.capricious.twitch.chat.filter.RepetitionPredicate;
-import com.linuxgods.kreiger.capricious.twitch.chat.gui.TwitchChatGui;
 import com.linuxgods.kreiger.capricious.twitch.chat.io.SimpleStdErrAndFileLogger;
 import com.linuxgods.kreiger.capricious.twitch.chat.irc.TwitchChatClient;
-import com.linuxgods.kreiger.capricious.twitch.web.TwitchWebScraper;
 import com.linuxgods.kreiger.util.Configuration;
 import com.linuxgods.kreiger.util.ConfigurationPropertiesFile;
 import javafx.application.Application;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import net.harawata.appdirs.AppDirsFactory;
 
@@ -44,6 +46,7 @@ public class Main extends Application {
     private static final int MIN_REPEATED_SUBSTRING_LENGTH = 3;
     private static final Predicate<TwitchChatMessage> REPETITION_PREDICATE = new RepetitionPredicate(REPETITION_MIN_CHECKED_LENGTH, REPETITION_LIMIT, MIN_REPEATED_SUBSTRING_LENGTH);
 
+    private final TwitchApi twitchApi = new TwitchApi("075ua3y1u8jb52lxf145zz5ctxkkz2");
     private final Predicate<TwitchChatMessage> messagePredicate = FEW_DUPLICATES_PREDICATE.and(REPETITION_PREDICATE);
 
     public static void main(String[] args) throws InterruptedException {
@@ -52,14 +55,26 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStageIgnored) throws Exception {
-        String previousChannel = CONFIGURATION.getString(CHANNEL);
+        String channelName = CONFIGURATION.getString(CHANNEL);
 
-        askForTwitchChannel(previousChannel).ifPresent(channel -> {
-            saveChannel(channel);
-            TwitchChatGui twitchChatGui = new TwitchChatGui(channel, new TwitchWebScraper());
+        while (true) {
+            Optional<Channel> channel = askForTwitchChannel(channelName);
+            if (!channel.isPresent()) {
+                System.exit(0);
+            }
+            channelName = channel.get().getName();
+            saveChannel(channelName);
+            String logoUrl = channel.get().getLogo();
+            ChatGui chatGui = new ChatGui(channelName, new Image(logoUrl));
 
-            connectToTwitchChannel(channel, twitchChatGui::append);
-        });
+            TwitchChatSource twitchChatSource = connectToTwitchChannel(channelName, chatGui::append);
+            chatGui.showAndWait();
+            twitchChatSource.shutdown();
+        }
+    }
+
+    private Optional<Channel> askForTwitchChannel(String channelName) {
+        return new ChatSelectionDialog(twitchApi, channelName).showAndWait();
     }
 
     private void saveChannel(String channel) {
@@ -67,18 +82,9 @@ public class Main extends Application {
         CONFIGURATION.save();
     }
 
-
-    private Optional<String> askForTwitchChannel(String defaultTwitchChannel) {
-        TextInputDialog textInputDialog = new TextInputDialog(defaultTwitchChannel);
-        textInputDialog.setTitle("Twitch Channel");
-        textInputDialog.setHeaderText("Select a Twitch Channel");
-        textInputDialog.setContentText("Select a Twitch Channel");
-        return textInputDialog.showAndWait();
-    }
-
-    private void connectToTwitchChannel(String channel, Consumer<TwitchChatMessage> twitchChatMessageConsumer) {
-        SimpleStdErrAndFileLogger log = new SimpleStdErrAndFileLogger(getLogDirectory(), channel);
-        TwitchChatSource chatSource = new TwitchChatClient(log, channel);
+    private TwitchChatSource connectToTwitchChannel(String channelName, Consumer<TwitchChatMessage> twitchChatMessageConsumer) {
+        SimpleStdErrAndFileLogger log = new SimpleStdErrAndFileLogger(getLogDirectory(), channelName);
+        TwitchChatSource chatSource = new TwitchChatClient(log, channelName);
 
         chatSource.consumeChatMessages(twitchChatMessage -> {
             log.setLogToStdErr(false);
@@ -86,6 +92,7 @@ public class Main extends Application {
                 twitchChatMessageConsumer.accept(twitchChatMessage);
             }
         });
+        return chatSource;
     }
 
     private static Path getLogDirectory() {

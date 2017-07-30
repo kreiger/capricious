@@ -1,4 +1,4 @@
-package com.linuxgods.kreiger.capricious.twitch.chat.gui;
+package com.linuxgods.kreiger.javafx;
 
 import javafx.scene.input.KeyEvent;
 

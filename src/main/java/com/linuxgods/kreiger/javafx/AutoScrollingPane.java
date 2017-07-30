@@ -1,4 +1,4 @@
-package com.linuxgods.kreiger.capricious.twitch.chat.gui;
+package com.linuxgods.kreiger.javafx;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -35,9 +35,7 @@ public class AutoScrollingPane extends ScrollPane {
     }
 
     private void keepScrollingToBottomWhUpdatingLayout() {
-        getContent().layoutBoundsProperty().addListener(contentLayoutBoundsInvalidated -> {
-            layoutIsBeingUpdated = true;
-        });
+        getContent().layoutBoundsProperty().addListener(contentLayoutBoundsInvalidated -> layoutIsBeingUpdated = true);
         vvalueProperty().addListener((observable, oldValue, newValue) -> {
             if (layoutIsBeingUpdated) {
                 layoutIsBeingUpdated = false;
@@ -51,9 +49,7 @@ public class AutoScrollingPane extends ScrollPane {
         setHbarPolicy(NEVER);
         setVbarPolicy(NEVER);
 
-        scrollingPaused.addListener((observable, oldValue, paused) -> {
-            setVbarPolicy(paused ? ALWAYS : NEVER);
-        });
+        scrollingPaused.addListener((observable, oldValue, paused) -> setVbarPolicy(paused ? ALWAYS : NEVER));
     }
 
     private void pauseScrollOnSingleClick() {
@@ -70,7 +66,7 @@ public class AutoScrollingPane extends ScrollPane {
         });
     }
 
-    public void toggleScrollingPausedXorJumpToBottom() {
+    private void toggleScrollingPausedXorJumpToBottom() {
         toggleScrollingPaused();
         if (!isScrollingPaused()) {
             jumpToBottom();

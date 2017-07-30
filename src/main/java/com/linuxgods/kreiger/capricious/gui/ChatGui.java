@@ -1,7 +1,10 @@
-package com.linuxgods.kreiger.capricious.twitch.chat.gui;
+package com.linuxgods.kreiger.capricious.gui;
 
 import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatMessage;
-import com.linuxgods.kreiger.capricious.twitch.web.TwitchWebScraper;
+import com.linuxgods.kreiger.javafx.AutoScrollingPane;
+import com.linuxgods.kreiger.javafx.ExpiringTextFlow;
+import com.linuxgods.kreiger.javafx.MaximizedFullscreenStage;
+import com.linuxgods.kreiger.javafx.SingleOrDoubleClickMouseEventHandler;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -18,53 +21,36 @@ import javafx.stage.Screen;
 import one.util.streamex.StreamEx;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import static java.util.stream.Collectors.toList;
 import static javafx.scene.layout.BackgroundPosition.CENTER;
 import static javafx.scene.layout.BackgroundRepeat.NO_REPEAT;
 
-public class TwitchChatGui {
+public class ChatGui {
     private static final int FONT_SIZE = 32;
     private static final int WIDTH = FONT_SIZE * 20;
     private static final double HEIGHT = Screen.getPrimary().getVisualBounds().getHeight();
     private final MaximizedFullscreenStage maximizedFullscreenStage = new MaximizedFullscreenStage();
     private final ExpiringTextFlow textFlow = createTextFlow();
     private final AutoScrollingPane autoScrollingPane = new AutoScrollingPane(textFlow);
-    private final String channel;
+    private final String channelName;
 
-    public TwitchChatGui(String channel, TwitchWebScraper twitchWebScraper) {
-        this.channel = channel;
-        maximizedFullscreenStage.setTitle(this.channel);
+    public ChatGui(String channelName, Image icon) {
+        this.channelName = channelName;
+        maximizedFullscreenStage.setTitle(this.channelName);
         Scene scene = new Scene(autoScrollingPane, WIDTH, HEIGHT);
         maximizedFullscreenStage.setScene(scene);
-        maximizedFullscreenStage.show();
+        maximizedFullscreenStage.getIcons().add(icon);
 
-        setWindowIconToChannelImage(channel, twitchWebScraper);
         setTitleAndBackgroundAndStopExpiringTextsWhenScrollingIsPaused();
         fullScreenOnDoubleClick();
-        setExitOnClose();
-    }
-
-    private void setExitOnClose() {
-        maximizedFullscreenStage.setOnCloseRequest(event -> exit());
-    }
-
-    private void exit() {
-        Platform.exit();
-        System.exit(0);
-    }
-
-    private void setWindowIconToChannelImage(String channel, TwitchWebScraper twitchWebScraper) {
-        CompletableFuture.supplyAsync(() -> twitchWebScraper.getChannelImage(channel).get())
-                .thenAccept(image -> Platform.runLater(() -> maximizedFullscreenStage.getIcons().add(image)));
     }
 
     private void setTitleAndBackgroundAndStopExpiringTextsWhenScrollingIsPaused() {
         BackgroundSize backgroundSize = new BackgroundSize(BackgroundSize.AUTO, 0.4, true, true, false, false);
         Background pauseBackground = new Background(new BackgroundImage(new Image(getClass().getResourceAsStream("pause.png")), NO_REPEAT, NO_REPEAT, CENTER, backgroundSize));
         autoScrollingPane.scrollingPausedProperty().addListener((observable, oldValue, scrollPaused) -> {
-            Platform.runLater(() -> maximizedFullscreenStage.setTitle(scrollPaused ? channel + " (Paused)" : channel));
+            Platform.runLater(() -> maximizedFullscreenStage.setTitle(scrollPaused ? channelName + " (Paused)" : channelName));
             textFlow.setExpiringEnabled(!scrollPaused);
             autoScrollingPane.getViewPort().setBackground(scrollPaused ? pauseBackground : null);
         });
@@ -93,6 +79,10 @@ public class TwitchChatGui {
                 .append(new TwitchChatMessage.Text(twitchChatMessage.toString().length(), "\n"))
                 .map(part -> part.accept(new NodeFactory(twitchChatMessage)))
                 .collect(toList());
+    }
+
+    public void showAndWait() {
+        maximizedFullscreenStage.showAndWait();
     }
 
     private static class NodeFactory implements TwitchChatMessage.Visitor<Node> {

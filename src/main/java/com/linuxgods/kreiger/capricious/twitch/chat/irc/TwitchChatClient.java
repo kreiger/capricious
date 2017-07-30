@@ -10,11 +10,10 @@ import org.kitteh.irc.client.library.feature.twitch.TwitchListener;
 
 import javax.swing.text.BadLocationException;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.Random;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
-import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
 
 public class TwitchChatClient implements TwitchChatSource {
@@ -23,6 +22,7 @@ public class TwitchChatClient implements TwitchChatSource {
 
     private final Consumer<String> log;
     private final String channel;
+    private Client ircClient;
 
     public TwitchChatClient(Consumer<String> log, String channel) {
         this.log = log;
@@ -32,7 +32,7 @@ public class TwitchChatClient implements TwitchChatSource {
     @Override
     public void consumeChatMessages(Consumer<TwitchChatMessage> consumer) {
         String nick = createAnonymousNickname();
-        Client ircClient = Client.builder()
+        ircClient = Client.builder()
                 .serverHost(SERVER_NAME)
                 .serverPort(SERVER_SECURE_PORT)
                 .nick(nick)
@@ -52,6 +52,11 @@ public class TwitchChatClient implements TwitchChatSource {
                 })
                 .build();
         ircClient.addChannel("#" + channel.toLowerCase());
+    }
+
+    @Override
+    public void shutdown() {
+        ircClient.shutdown();
     }
 
     private String createAnonymousNickname() {
