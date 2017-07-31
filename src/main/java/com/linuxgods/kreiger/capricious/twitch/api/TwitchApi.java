@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedField;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.AnnotatedParameter;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,15 +27,13 @@ public class TwitchApi {
         this.clientId = clientId;
         objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.registerModule(new JavaTimeModule());
         PropertyNamingStrategy propertyNamingStrategy = new PropertyNamingStrategy.SnakeCaseStrategy() {
             @Override
             public String translate(String input) {
                 return "id".equals(input) ? "_id" : super.translate(input);
             }
         };
-        if (DEBUG) {
-            propertyNamingStrategy = new DebugPropertyNamingStrategy(propertyNamingStrategy);
-        }
         objectMapper.setPropertyNamingStrategy(propertyNamingStrategy);
     }
 
