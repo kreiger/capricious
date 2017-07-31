@@ -79,4 +79,14 @@ public class TwitchVodChat implements TwitchChatSource {
     public void shutdown() {
 
     }
+
+    @Override
+    public String getName() {
+        return "https://www.twitch.tv/videos/"+videoId;
+    }
+
+    @Override
+    public Optional<String> getLogo() {
+        return Optional.empty();
+    }
 }

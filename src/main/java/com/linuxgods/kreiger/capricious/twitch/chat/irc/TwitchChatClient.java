@@ -1,15 +1,22 @@
 package com.linuxgods.kreiger.capricious.twitch.chat.irc;
 
+import com.linuxgods.kreiger.capricious.Main;
+import com.linuxgods.kreiger.capricious.twitch.api.Channel;
 import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatMessage;
 import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatSource;
+import com.linuxgods.kreiger.capricious.twitch.chat.io.SimpleStdErrAndFileLogger;
 import net.engio.mbassy.listener.Handler;
+import net.harawata.appdirs.AppDirsFactory;
 import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
 import org.kitteh.irc.client.library.feature.EventManager;
 import org.kitteh.irc.client.library.feature.twitch.TwitchListener;
 
 import javax.swing.text.BadLocationException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -20,12 +27,12 @@ public class TwitchChatClient implements TwitchChatSource {
     private static final String SERVER_NAME = "irc.chat.twitch.tv";
     private static final int SERVER_SECURE_PORT = 443;
 
-    private final Consumer<String> log;
-    private final String channel;
+    private final SimpleStdErrAndFileLogger log;
+    private final Channel channel;
     private Client ircClient;
 
-    public TwitchChatClient(Consumer<String> log, String channel) {
-        this.log = log;
+    public TwitchChatClient(Channel channel) {
+        this.log = new SimpleStdErrAndFileLogger(getLogDirectory(), channel.getName());
         this.channel = channel;
     }
 
@@ -46,17 +53,28 @@ public class TwitchChatClient implements TwitchChatSource {
                     eventManager.registerEventListener(new Object() {
                         @Handler
                         public void onChannelMessage(ChannelMessageEvent event) throws BadLocationException {
+                            log.setLogToStdErr(false);
                             consumer.accept(new IrcTwitchChatMessage(event));
                         }
                     });
                 })
                 .build();
-        ircClient.addChannel("#" + channel.toLowerCase());
+        ircClient.addChannel("#" + getName().toLowerCase());
     }
 
     @Override
     public void shutdown() {
         ircClient.shutdown();
+    }
+
+    @Override
+    public String getName() {
+        return channel.getName();
+    }
+
+    @Override
+    public Optional<String> getLogo() {
+        return Optional.of(channel.getLogo());
     }
 
     private String createAnonymousNickname() {
@@ -70,5 +88,10 @@ public class TwitchChatClient implements TwitchChatSource {
     private void log(String l) {
         log.accept(ZonedDateTime.now() + l);
     }
+
+    private static Path getLogDirectory() {
+        return Paths.get(AppDirsFactory.getInstance().getUserLogDir(Main.NAME, null, null));
+    }
+
 
 }

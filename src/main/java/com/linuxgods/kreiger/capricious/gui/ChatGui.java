@@ -35,12 +35,14 @@ public class ChatGui {
     private final AutoScrollingPane autoScrollingPane = new AutoScrollingPane(textFlow);
     private final String channelName;
 
-    public ChatGui(String channelName, Image icon) {
+    public ChatGui(String channelName, String logoUrl) {
         this.channelName = channelName;
         maximizedFullscreenStage.setTitle(this.channelName);
         Scene scene = new Scene(autoScrollingPane, WIDTH, HEIGHT);
         maximizedFullscreenStage.setScene(scene);
-        maximizedFullscreenStage.getIcons().add(icon);
+        if (null != logoUrl) {
+            maximizedFullscreenStage.getIcons().add(new Image(logoUrl));
+        }
 
         setTitleAndBackgroundAndStopExpiringTextsWhenScrollingIsPaused();
         fullScreenOnDoubleClick();
