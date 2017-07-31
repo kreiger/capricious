@@ -5,6 +5,8 @@ import com.linuxgods.kreiger.capricious.twitch.api.Channel;
 import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatMessage;
 import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatSource;
 import com.linuxgods.kreiger.capricious.twitch.chat.io.SimpleStdErrAndFileLogger;
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
 import net.engio.mbassy.listener.Handler;
 import net.harawata.appdirs.AppDirsFactory;
 import org.kitteh.irc.client.library.Client;
@@ -18,7 +20,6 @@ import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Random;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.joining;
@@ -29,7 +30,6 @@ public class TwitchChatClient implements TwitchChatSource {
 
     private final SimpleStdErrAndFileLogger log;
     private final Channel channel;
-    private Client ircClient;
 
     public TwitchChatClient(Channel channel) {
         this.log = new SimpleStdErrAndFileLogger(getLogDirectory(), channel.getName());
@@ -37,9 +37,10 @@ public class TwitchChatClient implements TwitchChatSource {
     }
 
     @Override
-    public void consumeChatMessages(Consumer<TwitchChatMessage> consumer) {
+    public Observable<TwitchChatMessage> getObservable() {
+        PublishSubject<TwitchChatMessage> publishSubject = PublishSubject.create();
         String nick = createAnonymousNickname();
-        ircClient = Client.builder()
+        Client ircClient = Client.builder()
                 .serverHost(SERVER_NAME)
                 .serverPort(SERVER_SECURE_PORT)
                 .nick(nick)
@@ -54,17 +55,14 @@ public class TwitchChatClient implements TwitchChatSource {
                         @Handler
                         public void onChannelMessage(ChannelMessageEvent event) throws BadLocationException {
                             log.setLogToStdErr(false);
-                            consumer.accept(new IrcTwitchChatMessage(event));
+                            publishSubject.onNext(new IrcTwitchChatMessage(event));
                         }
                     });
                 })
                 .build();
         ircClient.addChannel("#" + getName().toLowerCase());
-    }
-
-    @Override
-    public void shutdown() {
-        ircClient.shutdown();
+        return publishSubject
+                .doOnDispose(ircClient::shutdown);
     }
 
     @Override

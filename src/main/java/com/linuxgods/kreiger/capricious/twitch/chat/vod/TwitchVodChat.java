@@ -5,14 +5,16 @@ import com.linuxgods.kreiger.capricious.twitch.api.GetRechatMessages;
 import com.linuxgods.kreiger.capricious.twitch.api.GetVideoInfo;
 import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatMessage;
 import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatSource;
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Consumer;
 
 public class TwitchVodChat implements TwitchChatSource {
     private static final int MESSAGE_FETCH_INTERVAL = 30;
@@ -26,7 +28,8 @@ public class TwitchVodChat implements TwitchChatSource {
     }
 
     @Override
-    public void consumeChatMessages(Consumer<TwitchChatMessage> consumer) {
+    public Observable<TwitchChatMessage> getObservable() {
+        PublishSubject<TwitchChatMessage> publishSubject = PublishSubject.create();
         ConcurrentLinkedQueue<TwitchChatMessage> messages = new ConcurrentLinkedQueue<>();
         VideoInfo videoInfo = getVideoInfo();
         Instant start = Instant.now();
@@ -36,7 +39,7 @@ public class TwitchVodChat implements TwitchChatSource {
         Timer t = new Timer(POLL_INTERVAL, e -> {
             final Duration playTime = Duration.between(start, Instant.now());
             while (messages.peek() != null && videoInfo.getStartInstant().plus(playTime).isAfter(messages.peek().getInstant())) {
-                consumer.accept(messages.poll());
+                publishSubject.onNext(messages.poll());
             }
             if (stopChatWhenEmpty & messages.isEmpty()) {
                 ((Timer) e.getSource()).stop();
@@ -51,6 +54,8 @@ public class TwitchVodChat implements TwitchChatSource {
         });
         t.setRepeats(true);
         t.start();
+        return publishSubject
+                .doOnDispose(t::stop);
     }
 
     private VideoInfo getVideoInfo() {
@@ -73,11 +78,6 @@ public class TwitchVodChat implements TwitchChatSource {
                 return null;
             }
         }.execute();
-    }
-
-    @Override
-    public void shutdown() {
-
     }
 
     @Override

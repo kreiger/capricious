@@ -7,13 +7,13 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class RepetitionPredicate implements Predicate<TwitchChatMessage> {
+public class NonRepetitivePredicate implements Predicate<TwitchChatMessage> {
 
     private final int minRepeatedSubstringLength;
     private final double repetitionLimit;
     private final int minCheckedLength;
 
-    public RepetitionPredicate(int minCheckedLength, double repetitionLimit, int minRepeatedSubstringLength) {
+    public NonRepetitivePredicate(int minCheckedLength, double repetitionLimit, int minRepeatedSubstringLength) {
         this.minCheckedLength = minCheckedLength;
         this.repetitionLimit = repetitionLimit;
         this.minRepeatedSubstringLength = minRepeatedSubstringLength;
