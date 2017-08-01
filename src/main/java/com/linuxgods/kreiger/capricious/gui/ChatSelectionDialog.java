@@ -13,6 +13,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.TilePane;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
@@ -58,12 +59,14 @@ public class ChatSelectionDialog {
         }
         stage.setTitle(TITLE);
         stage.setResizable(true);
-        FlowPane flowPane = new FlowPane(buttons);
-        flowPane.setHgap(GAP_PIXELS);
-        flowPane.setVgap(GAP_PIXELS);
-        ScrollPane scrollPane = new ScrollPane(flowPane);
 
-        scrollPane.setPrefViewportWidth(MEDIUM_PREVIEW_IMAGE_WIDTH * 3 + 2 * GAP_PIXELS);
+        TilePane tilePane = new TilePane(buttons);
+        tilePane.setHgap(GAP_PIXELS);
+        tilePane.setVgap(GAP_PIXELS);
+        tilePane.setPrefColumns(3);
+
+        ScrollPane scrollPane = new ScrollPane(tilePane);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
         scrollPane.setFitToWidth(true);
 
         Label label = new Label(TITLE + ":");
