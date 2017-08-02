@@ -6,17 +6,18 @@ import com.linuxgods.kreiger.capricious.twitch.api.TwitchApi;
 import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatSource;
 import com.linuxgods.kreiger.capricious.twitch.chat.irc.TwitchChatClient;
 import com.linuxgods.kreiger.capricious.twitch.chat.vod.TwitchVodChat;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.TilePane;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -25,74 +26,71 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ChatSelectionDialog {
-    private static final String TITLE = "Select a Twitch channel";
     private static final Pattern VIDEO_PATTERN = Pattern.compile("/videos/(\\d+)");
 
-    private static final int GAP_PIXELS = 10;
     private static final int MEDIUM_PREVIEW_IMAGE_WIDTH = 320;
-    private final Stage stage = new Stage();
+
+    @FXML
+    private Stage stage;
+    @FXML
+    private TilePane tilePane;
+    @FXML
+    private TextField textField;
+
     private final TwitchApi twitchApi;
+    private final List<Stream> liveStreams;
     private TwitchChatSource result;
+
 
     public ChatSelectionDialog(TwitchApi twitchApi, String defaultChannelName) {
         this.twitchApi = twitchApi;
-        List<Stream> liveStreams = twitchApi.getLiveStreams();
-        Button[] buttons = liveStreams.stream()
-                .map(liveStream -> {
-                    ImageView imageView = new ImageView(liveStream.getPreview().getMedium());
-                    Channel channel = liveStream.getChannel();
-                    String labelText = channel.getName() + "\n"
-                            + channel.getStatus() + "\n"
-                            + liveStream.getViewers() + " watching " + channel.getDisplayName() + "\n"
-                            + " playing " + liveStream.getGame();
-                    Button button = new Button(labelText, imageView);
-                    button.setPadding(Insets.EMPTY);
-                    button.setMaxWidth(MEDIUM_PREVIEW_IMAGE_WIDTH);
-                    button.setContentDisplay(ContentDisplay.TOP);
-                    button.setTextAlignment(TextAlignment.CENTER);
-                    button.setOnAction(action -> setResultAndClose(new TwitchChatClient(channel)));
-                    return button;
-                })
-                .toArray(Button[]::new);
+        liveStreams = twitchApi.getLiveStreams();
+        Button[] buttons = createLiveStreamsButtons();
         if (buttons.length == 0) {
             return;
         }
-        stage.setTitle(TITLE);
-        stage.setResizable(true);
+        loadFxml(this, "ChatSelectionDialog.fxml");
 
-        TilePane tilePane = new TilePane(buttons);
-        tilePane.setHgap(GAP_PIXELS);
-        tilePane.setVgap(GAP_PIXELS);
-        tilePane.setPrefColumns(3);
+        tilePane.getChildren().addAll(buttons);
+        textField.setText(defaultChannelName);
+    }
 
-        ScrollPane scrollPane = new ScrollPane(tilePane);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
-        scrollPane.setFitToWidth(true);
+    private void loadFxml(Object controller, String name) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(name));
+            fxmlLoader.setController(controller);
+            fxmlLoader.load();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-        Label label = new Label(TITLE + ":");
-        TextField textField = new TextField(defaultChannelName);
-        Button connectButton = new Button("Connect");
-        connectButton.setDefaultButton(true);
-        connectButton.setOnAction(action -> {
-            String chatSourceName = textField.getText();
+    private Button[] createLiveStreamsButtons() {
+        return liveStreams.stream()
+                    .map(liveStream -> {
+                        ImageView imageView = new ImageView(liveStream.getPreview().getMedium());
+                        Channel channel = liveStream.getChannel();
+                        String labelText = channel.getName() + "\n"
+                                + channel.getStatus() + "\n"
+                                + liveStream.getViewers() + " watching " + channel.getDisplayName() + "\n"
+                                + " playing " + liveStream.getGame();
+                        Button button = new Button(labelText, imageView);
+                        button.setPadding(Insets.EMPTY);
+                        button.setMaxWidth(MEDIUM_PREVIEW_IMAGE_WIDTH);
+                        button.setContentDisplay(ContentDisplay.TOP);
+                        button.setTextAlignment(TextAlignment.CENTER);
+                        button.setOnAction(action -> setResultAndClose(new TwitchChatClient(channel)));
+                        return button;
+                    })
+                    .toArray(Button[]::new);
+    }
 
-            setResultAndClose(getTwitchVodChat(chatSourceName)
-                    .orElseGet(() -> getTwitchChatClient(liveStreams, chatSourceName)));
-        });
-        GridPane.setHgrow(textField, Priority.ALWAYS);
-        GridPane.setFillWidth(textField, true);
-        GridPane.setColumnSpan(scrollPane, GridPane.REMAINING);
+    @FXML
+    private void setResultFromTextField() {
+        String chatSourceName = textField.getText();
 
-        GridPane gridPane = new GridPane();
-        gridPane.setHgap(10);
-        gridPane.setVgap(10);
-        gridPane.setPadding(new Insets(10));
-        gridPane.add(label, 0, 0);
-        gridPane.add(textField, 1, 0);
-        gridPane.add(connectButton, 2, 0);
-        gridPane.add(scrollPane, 0, 1);
-        Scene scene = new Scene(gridPane);
-        stage.setScene(scene);
+        setResultAndClose(getTwitchVodChat(chatSourceName)
+                .orElseGet(() -> getTwitchChatClient(liveStreams, chatSourceName)));
     }
 
     private void setResultAndClose(TwitchChatSource result) {

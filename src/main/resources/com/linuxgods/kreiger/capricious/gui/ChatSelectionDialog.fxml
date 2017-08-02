@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.Scene?>
+<?import javafx.stage.Stage?>
+<?import javafx.geometry.Insets?>
+<Stage xmlns="http://javafx.com/javafx"
+       xmlns:fx="http://javafx.com/fxml"
+       fx:id="stage"
+       title="Select a Twitch channel">
+    <scene>
+        <Scene>
+            <GridPane hgap="10" vgap="10">
+                <padding><Insets topRightBottomLeft="10"/></padding>
+                <Label text="Twitch channel or vod url:"/>
+                <TextField fx:id="textField"
+                   GridPane.columnIndex="1" GridPane.fillWidth="true" GridPane.hgrow="ALWAYS"/>
+                <Button onAction="#setResultFromTextField" text="Go" defaultButton="true" GridPane.columnIndex="2"/>
+                <ScrollPane vbarPolicy="ALWAYS" fitToWidth="true" GridPane.rowIndex="1" GridPane.columnSpan="3">
+                    <TilePane fx:id="tilePane" hgap="10" vgap="10" prefColumns="3">
+
+                    </TilePane>
+                </ScrollPane>
+            </GridPane>
+        </Scene>
+    </scene>
+
+</Stage>
