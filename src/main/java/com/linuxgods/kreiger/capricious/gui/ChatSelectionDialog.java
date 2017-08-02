@@ -7,7 +7,6 @@ import com.linuxgods.kreiger.capricious.twitch.chat.TwitchChatSource;
 import com.linuxgods.kreiger.capricious.twitch.chat.irc.TwitchChatClient;
 import com.linuxgods.kreiger.capricious.twitch.chat.vod.TwitchVodChat;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
@@ -17,7 +16,6 @@ import javafx.scene.layout.TilePane;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -45,24 +43,13 @@ public class ChatSelectionDialog {
     public ChatSelectionDialog(TwitchApi twitchApi, String defaultChannelName) {
         this.twitchApi = twitchApi;
         liveStreams = twitchApi.getLiveStreams();
-        Button[] buttons = createLiveStreamsButtons();
-        if (buttons.length == 0) {
+        if (liveStreams.isEmpty()) {
             return;
         }
-        loadFxml(this, "ChatSelectionDialog.fxml");
 
-        tilePane.getChildren().addAll(buttons);
+        FXml.init(this);
         textField.setText(defaultChannelName);
-    }
-
-    private void loadFxml(Object controller, String name) {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(name));
-            fxmlLoader.setController(controller);
-            fxmlLoader.load();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        tilePane.getChildren().addAll(createLiveStreamsButtons());
     }
 
     private Button[] createLiveStreamsButtons() {

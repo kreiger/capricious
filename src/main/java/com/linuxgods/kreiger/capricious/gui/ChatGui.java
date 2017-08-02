@@ -6,9 +6,8 @@ import com.linuxgods.kreiger.javafx.ExpiringTextFlow;
 import com.linuxgods.kreiger.javafx.MaximizedFullscreenStage;
 import com.linuxgods.kreiger.javafx.SingleOrDoubleClickMouseEventHandler;
 import javafx.application.Platform;
-import javafx.geometry.Insets;
+import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
@@ -17,7 +16,6 @@ import javafx.scene.layout.BackgroundSize;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.stage.Screen;
 import one.util.streamex.StreamEx;
 
 import java.util.List;
@@ -28,18 +26,22 @@ import static javafx.scene.layout.BackgroundRepeat.NO_REPEAT;
 
 public class ChatGui {
     private static final int FONT_SIZE = 32;
-    private static final int WIDTH = FONT_SIZE * 20;
-    private static final double HEIGHT = Screen.getPrimary().getVisualBounds().getHeight();
-    private final MaximizedFullscreenStage maximizedFullscreenStage = new MaximizedFullscreenStage();
-    private final ExpiringTextFlow textFlow = createTextFlow();
-    private final AutoScrollingPane autoScrollingPane = new AutoScrollingPane(textFlow);
+
+    @FXML
+    private MaximizedFullscreenStage maximizedFullscreenStage;
+
+    @FXML
+    private ExpiringTextFlow textFlow;
+
+    @FXML
+    private AutoScrollingPane autoScrollingPane;
+
     private final String channelName;
 
     public ChatGui(String channelName, String logoUrl) {
         this.channelName = channelName;
+        FXml.init(this);
         maximizedFullscreenStage.setTitle(this.channelName);
-        Scene scene = new Scene(autoScrollingPane, WIDTH, HEIGHT);
-        maximizedFullscreenStage.setScene(scene);
         if (null != logoUrl) {
             maximizedFullscreenStage.getIcons().add(new Image(logoUrl));
         }
@@ -56,13 +58,6 @@ public class ChatGui {
             textFlow.setExpiringEnabled(!scrollPaused);
             autoScrollingPane.getViewPort().setBackground(scrollPaused ? pauseBackground : null);
         });
-    }
-
-    private ExpiringTextFlow createTextFlow() {
-        ExpiringTextFlow textFlow = new ExpiringTextFlow();
-        textFlow.setPadding(new Insets(20));
-        textFlow.setLineSpacing(20);
-        return textFlow;
     }
 
     private void fullScreenOnDoubleClick() {

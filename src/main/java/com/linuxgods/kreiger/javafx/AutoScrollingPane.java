@@ -22,20 +22,23 @@ public class AutoScrollingPane extends ScrollPane {
     private final Timeline scrollToBottomAnimation = new Timeline(new KeyFrame(SCROLL_DURATION, new KeyValue(vvalueProperty(), getVmax())));
     private boolean layoutIsBeingUpdated;
 
-    public AutoScrollingPane(Region region) {
-        super(region);
-
-        setFitToWidth(true);
-
+    public AutoScrollingPane() {
         pauseScrollOnSingleClick();
         pauseScrollOnSpacePress();
         toggleScrollPausedWhenScrolling();
         showScrollBarWhenPaused();
-        keepScrollingToBottomWhUpdatingLayout();
+        keepScrollingToBottomWhenUpdatingLayout();
     }
 
-    private void keepScrollingToBottomWhUpdatingLayout() {
-        getContent().layoutBoundsProperty().addListener(contentLayoutBoundsInvalidated -> layoutIsBeingUpdated = true);
+    public AutoScrollingPane(Region region) {
+        this();
+        setContent(region);
+    }
+
+    private void keepScrollingToBottomWhenUpdatingLayout() {
+        contentProperty().addListener((observable, oldValue, newValue) -> {
+            newValue.layoutBoundsProperty().addListener(contentLayoutBoundsInvalidated -> layoutIsBeingUpdated = true);
+        });
         vvalueProperty().addListener((observable, oldValue, newValue) -> {
             if (layoutIsBeingUpdated) {
                 layoutIsBeingUpdated = false;

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.linuxgods.kreiger.javafx.AutoScrollingPane?>
+<?import com.linuxgods.kreiger.javafx.ExpiringTextFlow?>
+<?import com.linuxgods.kreiger.javafx.MaximizedFullscreenStage?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Scene?>
+<?import javafx.stage.Screen?>
+<MaximizedFullscreenStage
+        xmlns="http://javafx.com/javafx"
+        xmlns:fx="http://javafx.com/fxml"
+        fx:id="maximizedFullscreenStage">
+    <fx:define>
+        <Screen fx:factory="getPrimary" fx:id="screen"/>
+    </fx:define>
+    <scene>
+        <Scene>
+            <AutoScrollingPane fx:id="autoScrollingPane" fitToWidth="true">
+                <ExpiringTextFlow lineSpacing="20" fx:id="textFlow"
+                                  prefWidth="640"
+                                  prefHeight="${screen.visualBounds.height}">
+                    <padding><Insets topRightBottomLeft="20"/></padding>
+                </ExpiringTextFlow>
+            </AutoScrollingPane>
+        </Scene>
+    </scene>
+</MaximizedFullscreenStage>
