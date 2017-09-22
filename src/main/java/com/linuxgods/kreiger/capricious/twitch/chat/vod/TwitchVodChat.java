@@ -9,7 +9,8 @@ import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedList;
@@ -56,6 +57,15 @@ public class TwitchVodChat implements TwitchChatSource {
         t.start();
         return publishSubject
                 .doOnDispose(t::stop);
+    }
+
+    @Override
+    public URI getURI() {
+        try {
+            return new URI("https://www.twitch.tv/videos/"+videoId);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private VideoInfo getVideoInfo() {

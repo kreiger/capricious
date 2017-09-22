@@ -15,6 +15,8 @@ import org.kitteh.irc.client.library.feature.EventManager;
 import org.kitteh.irc.client.library.feature.twitch.TwitchListener;
 
 import javax.swing.text.BadLocationException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
@@ -63,6 +65,15 @@ public class TwitchChatClient implements TwitchChatSource {
         ircClient.addChannel("#" + getName().toLowerCase());
         return publishSubject
                 .doOnDispose(ircClient::shutdown);
+    }
+
+    @Override
+    public URI getURI() {
+        try {
+            return new URI(channel.getUrl());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

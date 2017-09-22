@@ -6,6 +6,7 @@ public class Channel {
     private String status;
     private String name;
     private String logo;
+    private String url;
 
     public String getDisplayName() {
         return displayName;
@@ -22,4 +23,6 @@ public class Channel {
     public String getLogo() {
         return logo;
     }
+
+    public String getUrl() { return url; }
 }

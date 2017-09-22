@@ -46,7 +46,7 @@ public class Main extends Application {
         String channelName = twitchChatSource.getName();
         saveChannel(channelName);
         String logoUrl = twitchChatSource.getLogo().orElse(null);
-        ChatGui chatGui = new ChatGui(channelName, logoUrl);
+        ChatGui chatGui = new ChatGui(twitchChatSource);
 
         Disposable disposable = connect(twitchChatSource, chatGui::append);
         chatGui.showAndWait();
