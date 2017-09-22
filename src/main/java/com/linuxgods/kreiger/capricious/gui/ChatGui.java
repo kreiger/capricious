@@ -60,11 +60,14 @@ public class ChatGui {
     private MenuItem createOpenInBrowserMenuItem(TwitchChatSource twitchChatSource) {
         MenuItem openInBrowser = new MenuItem("Open in browser");
         openInBrowser.setOnAction(event -> {
-            try {
-                Desktop.getDesktop().browse(twitchChatSource.getURI());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            EventQueue.invokeLater(() -> {
+                        try {
+                            Desktop.getDesktop().browse(twitchChatSource.getURI());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+            );
         });
         return openInBrowser;
     }
